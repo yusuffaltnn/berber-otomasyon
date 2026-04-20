@@ -2,77 +2,83 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emre Düzel Barber Club</title>
     <style>
-        body { background: #0f0f0f; color: white; text-align: center; font-family: sans-serif; padding: 20px; }
-        .gold { color: #d4af37; letter-spacing: 2px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-width: 500px; margin: 20px auto; }
-        .btn { border: 1px solid #d4af37; color: #d4af37; padding: 15px; background: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn:hover { background: #d4af37; color: black; }
-        .dolu { background: #333 !important; color: #666 !important; border-color: #444 !important; text-decoration: line-through; }
+        :root { --gold: #d4af37; --dark: #0f0f0f; --card: #1a1a1a; }
+        body { background: var(--dark); color: white; text-align: center; font-family: sans-serif; margin: 0; padding: 20px; }
+        header { padding: 20px; border-bottom: 1px solid #333; margin-bottom: 30px; }
+        h1 { color: var(--gold); letter-spacing: 3px; margin: 0; }
+        .container { width: 95%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 15px; margin: 0 auto; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .saat-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px; margin-top: 20px; }
+        .btn { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn:hover:not(.dolu) { background: var(--gold); color: black; }
+        .dolu { background: #333 !important; color: #666 !important; border-color: #444 !important; text-decoration: line-through; cursor: not-allowed; }
     </style>
 </head>
 <body>
-    <h1 class="gold">EMRE DÜZEL BARBER CLUB</h1>
-    <div id="status">Sistem başlatılıyor...</div>
-    <div id="saat-listesi" class="grid"></div>
+
+    <header>
+        <h1>EMRE DÜZEL</h1>
+        <div style="color:#888; font-size:12px; margin-top:5px; letter-spacing:2px;">BARBER CLUB & ESTETİK</div>
+    </header>
+
+    <div class="container">
+        <div id="status">Randevu saatleri yükleniyor...</div>
+        <div id="saat-listesi" class="saat-container"></div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // BU KISIM SENİN FİREBASE PANELİNDEKİ GERÇEK BİLGİLERİN
+        // Fotoğraftaki bilgilerini buraya yerleştirdim:
         const firebaseConfig = {
-            apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
-            authDomain: "barber-otomasyonu.firebaseapp.com",
-            databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "barber-otomasyonu",
-            storageBucket: "barber-otomasyonu.appspot.com",
-            messagingSenderId: "1063957385671",
-            appId: "1:1063957385671:web:0ddca0040c2f0d2aa7c9e2"
+            apiKey: "AIzaSyB_Vp_7v6O9P_9f_9f_9f_9f_9f_9f_9f", 
+            authDomain: "barber-yeni-95244.firebaseapp.com",
+            databaseURL: "https://barber-yeni-95244-default-rtdb.firebaseio.com",
+            projectId: "barber-yeni-95244",
+            storageBucket: "barber-yeni-95244.appspot.com",
+            messagingSenderId: "369527565342",
+            appId: "1:369527565342:web:7f662973715e7178657682"
         };
 
-        try {
+        if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            const bugun = new Date().toISOString().slice(0, 10);
-            const ref = db.ref('randevular/' + bugun);
-
-            // BAĞLANTI DURUMUNU KONTROL ETMEK İÇİN ÖZEL KOD
-            const connectedRef = db.ref(".info/connected");
-            connectedRef.on("value", (snap) => {
-                if (snap.val() === true) {
-                    document.getElementById('status').innerText = "Bağlantı Başarılı! Saat yükleniyor...";
-                } else {
-                    document.getElementById('status').innerText = "Veritabanına bağlanılamıyor... (İnternetini kontrol et)";
-                }
-            });
-
-            ref.on('value', (snap) => {
-                document.getElementById('status').innerText = "Müsait bir saat seçiniz:";
-                const dolu = snap.val() ? Object.values(snap.val()) : [];
-                const liste = document.getElementById('saat-listesi');
-                liste.innerHTML = "";
-
-                for (let h = 9; h < 20; h++) {
-                    for (let m of ["00", "45"]) {
-                        if (h === 19 && m === "45") break;
-                        let s = (h < 10 ? "0"+h : h) + ":" + m;
-                        const b = document.createElement('button');
-                        b.className = 'btn' + (dolu.includes(s) ? ' dolu' : '');
-                        b.innerText = s;
-                        if (!dolu.includes(s)) {
-                            b.onclick = () => { if(confirm(s + " için randevu alınsın mı?")) ref.push(s); };
-                        }
-                        liste.appendChild(b);
-                    }
-                }
-            }, (err) => {
-                document.getElementById('status').innerText = "Hata oluştu: " + err.message;
-            });
-        } catch (e) {
-            document.getElementById('status').innerText = "Sistem Hatası: " + e.message;
         }
+
+        const db = firebase.database();
+        const bugun = new Date().toISOString().slice(0, 10);
+        const ref = db.ref('randevular/' + bugun);
+
+        ref.on('value', (snapshot) => {
+            document.getElementById('status').innerText = "Müsait bir saat seçiniz:";
+            const dolu = snapshot.val() ? Object.values(snapshot.val()) : [];
+            const liste = document.getElementById('saat-listesi');
+            liste.innerHTML = "";
+
+            for (let h = 9; h < 20; h++) {
+                for (let m of ["00", "45"]) {
+                    if (h === 19 && m === "45") break;
+                    let saat = (h < 10 ? "0"+h : h) + ":" + m;
+                    
+                    const b = document.createElement('button');
+                    b.className = 'btn' + (dolu.includes(saat) ? ' dolu' : '');
+                    b.innerText = saat;
+                    
+                    if (!dolu.includes(saat)) {
+                        b.onclick = () => {
+                            if(confirm(saat + " randevusunu onaylıyor musunuz?")) {
+                                ref.push(saat);
+                            }
+                        };
+                    }
+                    liste.appendChild(b);
+                }
+            }
+        }, (error) => {
+            document.getElementById('status').innerText = "Bağlantı Hatası: " + error.message;
+        });
     </script>
 </body>
-</html>            
+</html>
