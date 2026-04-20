@@ -1,85 +1,48 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emre Düzel Barber Club</title>
-    <style>
-        :root { --gold: #d4af37; --dark: #121212; }
-        body { background: var(--dark); color: white; text-align: center; font-family: sans-serif; padding: 20px; }
-        h1 { color: var(--gold); margin-bottom: 5px; }
-        .sub { color: #aaa; margin-bottom: 30px; font-size: 14px; }
-        .saat-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; max-width: 500px; margin: 0 auto; }
-        .saat-btn { border: 1px solid var(--gold); color: var(--gold); padding: 15px; background: none; cursor: pointer; border-radius: 8px; font-weight: bold; }
-        .saat-btn:hover { background: var(--gold); color: black; }
-        .dolu { background: #333 !important; color: #666 !important; border-color: #444 !important; cursor: not-allowed; text-decoration: line-through; }
-    </style>
-</head>
-<body>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <h1>EMRE DÜZEL BARBER CLUB</h1>
-    <div class="sub">Samandağ'ın İlk Erkek Güzellik Merkezi</div>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
+        authDomain: "barber-otomasyonu.firebaseapp.com",
+        // SONUNDA SLASH OLMADAN DENE:
+        databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app", 
+        projectId: "barber-otomasyonu",
+        storageBucket: "barber-otomasyonu.appspot.com",
+        messagingSenderId: "1063957385671",
+        appId: "1:1063957385671:web:0ddca0040c2f0d2aa7c9e2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
     
-    <div id="saat-listesi" class="saat-container">
-        <p>Yükleniyor...</p>
-    </div>
+    // Bağlantı testi için konsola yazdıralım
+    console.log("Veritabanına bağlanılıyor...");
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    const bugun = new Date().toISOString().slice(0, 10);
+    const dbRef = database.ref('randevular/' + bugun);
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
-            authDomain: "barber-otomasyonu.firebaseapp.com",
-            databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app/",
-            projectId: "barber-otomasyonu",
-            storageBucket: "barber-otomasyonu.appspot.com",
-            messagingSenderId: "1063957385671",
-            appId: "1:1063957385671:web:0ddca0040c2f0d2aa7c9e2"
-        };
-
-        // Başlat
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        
-        const bugun = new Date().toISOString().slice(0, 10);
-        const dbRef = database.ref('randevular/' + bugun);
-
+    dbRef.on('value', (snapshot) => {
+        console.log("Veri çekildi:", snapshot.val());
         const listeDiv = document.getElementById('saat-listesi');
+        const doluSaatler = snapshot.val() ? Object.values(snapshot.val()) : [];
+        listeDiv.innerHTML = ""; 
 
-        // Verileri Dinle
-        dbRef.on('value', (snapshot) => {
-            const doluSaatler = snapshot.val() ? Object.values(snapshot.val()) : [];
-            listeDiv.innerHTML = ""; // Yükleniyor yazısını sil
-
-            for (let h = 9; h < 20; h++) {
-                for (let m of ["00", "45"]) {
-                    if (h === 19 && m === "45") break; 
-                    let saat = (h < 10 ? "0"+h : h) + ":" + m;
-                    
-                    const btn = document.createElement('button');
-                    btn.className = 'saat-btn';
-                    btn.innerText = saat;
-
-                    if (doluSaatler.includes(saat)) {
-                        btn.classList.add('dolu');
-                        btn.disabled = true;
-                    } else {
-                        btn.onclick = () => {
-                            if(confirm(saat + " randevusunu onaylıyor musunuz?")) {
-                                dbRef.push(saat).then(() => {
-                                    alert("Randevu alındı! WhatsApp'a yönlendiriliyorsunuz.");
-                                    window.open("https://wa.me/905XXXXXXXXX?text=" + saat + " randevusu aldım.");
-                                });
-                            }
-                        };
-                    }
-                    listeDiv.appendChild(btn);
+        for (let h = 9; h < 20; h++) {
+            for (let m of ["00", "45"]) {
+                if (h === 19 && m === "45") break; 
+                let saat = (h < 10 ? "0"+h : h) + ":" + m;
+                const btn = document.createElement('button');
+                btn.className = 'saat-btn' + (doluSaatler.includes(saat) ? ' dolu' : '');
+                btn.innerText = saat;
+                if (!doluSaatler.includes(saat)) {
+                    btn.onclick = () => { if(confirm(saat + " onaylıyor musun?")) dbRef.push(saat); };
                 }
+                listeDiv.appendChild(btn);
             }
-        }, (error) => {
-            listeDiv.innerHTML = "<p>Hata: " + error.message + "</p>";
-        });
-    </script>
-</body>
-</html>
+        }
+    }, (error) => {
+        console.error("Firebase Hatası:", error);
+        document.getElementById('saat-listesi').innerHTML = "Bağlantı Hatası: " + error.message;
+    });
+</script>
