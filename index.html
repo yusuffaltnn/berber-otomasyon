@@ -6,124 +6,41 @@
     <title>Emre Düzel Barber Club | Randevu</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Poppins:wght@300;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold: #d4af37;
-            --dark: #0a0a0a;
-            --card-bg: #161616;
-            --text: #ffffff;
-        }
+        :root { --gold: #d4af37; --dark: #0a0a0a; --card-bg: #161616; --text: #ffffff; }
+        body { background-color: var(--dark); color: var(--text); font-family: 'Poppins', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        header { width: 100%; padding: 30px 0; text-align: center; background: linear-gradient(to bottom, #1a1a1a, var(--dark)); border-bottom: 2px solid var(--gold); margin-bottom: 20px; }
+        h1 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 2.2rem; margin: 0; letter-spacing: 4px; }
+        .container { width: 90%; max-width: 450px; background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #222; box-shadow: 0 15px 35px rgba(0,0,0,0.8); }
+        
+        /* İsim Kutusu Tasarımı */
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { color: var(--gold); font-size: 0.9rem; margin-bottom: 8px; display: block; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #222; color: white; outline: none; box-sizing: border-box; }
+        input:focus { border-color: var(--gold); }
 
-        body {
-            background-color: var(--dark);
-            color: var(--text);
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        header {
-            width: 100%;
-            padding: 40px 0;
-            text-align: center;
-            background: linear-gradient(to bottom, #1a1a1a, var(--dark));
-            border-bottom: 2px solid var(--gold);
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-family: 'Cinzel', serif;
-            color: var(--gold);
-            font-size: 2.5rem;
-            margin: 0;
-            letter-spacing: 5px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .subtitle {
-            font-size: 0.8rem;
-            color: #888;
-            letter-spacing: 3px;
-            margin-top: 10px;
-            text-transform: uppercase;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 450px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
-            border: 1px solid #222;
-        }
-
-        #status {
-            margin-bottom: 20px;
-            font-weight: 500;
-            color: var(--gold);
-            font-size: 1.1rem;
-        }
-
-        .saat-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-
-        .btn {
-            background: transparent;
-            border: 1px solid #333;
-            color: var(--text);
-            padding: 15px 5px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-        }
-
-        .btn:hover:not(.dolu) {
-            border-color: var(--gold);
-            background: rgba(212, 175, 55, 0.1);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.2);
-        }
-
-        .dolu {
-            background: #222 !important;
-            color: #444 !important;
-            border-color: #222 !important;
-            text-decoration: line-through;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        footer {
-            margin-top: 50px;
-            padding-bottom: 30px;
-            color: #444;
-            font-size: 0.7rem;
-        }
+        .saat-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .btn { background: transparent; border: 1px solid #333; color: var(--text); padding: 12px 5px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .btn:hover:not(.dolu) { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); }
+        .dolu { background: #222 !important; color: #444 !important; border-color: #222 !important; text-decoration: line-through; cursor: not-allowed; opacity: 0.5; }
+        #status { margin-bottom: 15px; color: var(--gold); font-size: 1rem; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>EMRE DÜZEL</h1>
-        <div class="subtitle">Barber Club & Aesthetic</div>
+        <div style="font-size:0.7rem; color:#888; letter-spacing:3px; text-transform:uppercase;">Barber Club & Aesthetic</div>
     </header>
 
     <div class="container">
-        <div id="status">Bağlantı kuruluyor...</div>
+        <div class="input-group">
+            <label for="musteriAd">Adınız ve Soyadınız:</label>
+            <input type="text" id="musteriAd" placeholder="Örn: Ahmet Yılmaz">
+        </div>
+
+        <div id="status">Lütfen isminizi yazıp saat seçin:</div>
         <div id="saat-listesi" class="saat-container"></div>
     </div>
-
-    <footer>
-        &copy; 2026 Emre Düzel Barber Club - İskenderun
-    </footer>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -139,17 +56,15 @@
             appId: "1:255260470439:web:b3a5cdaf975d3d34f17f82"
         };
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
         const bugun = new Date().toISOString().slice(0, 10);
         const ref = db.ref('randevular/' + bugun);
 
         ref.on('value', (snapshot) => {
-            document.getElementById('status').innerText = "Müsait bir saat seçiniz:";
-            const dolu = snapshot.val() ? Object.values(snapshot.val()) : [];
+            const doluVerisi = snapshot.val() || {};
+            const doluSaatler = Object.values(doluVerisi).map(item => typeof item === 'string' ? item : item.saat);
+            
             const liste = document.getElementById('saat-listesi');
             liste.innerHTML = "";
 
@@ -157,17 +72,23 @@
                 for (let m of ["00", "45"]) {
                     if (h === 19 && m === "45") break;
                     let saat = (h < 10 ? "0"+h : h) + ":" + m;
+                    const isDolu = doluSaatler.includes(saat);
                     
                     const b = document.createElement('button');
-                    b.className = 'btn' + (dolu.includes(saat) ? ' dolu' : '');
+                    b.className = 'btn' + (isDolu ? ' dolu' : '');
                     b.innerText = saat;
                     
-                    if (!dolu.includes(saat)) {
+                    if (!isDolu) {
                         b.onclick = () => {
-                            if(confirm(saat + " randevusunu onaylıyor musunuz?")) {
-                                ref.push(saat).then(() => {
-                                    // Buraya WhatsApp yönlendirmesi gelecek
-                                    window.location.href = "https://wa.me/905346602449?text=Merhaba, " + saat + " saati için randevu almak istiyorum.";
+                            const ad = document.getElementById('musteriAd').value.trim();
+                            if (!ad) {
+                                alert("Lütfen önce adınızı ve soyadınızı yazın!");
+                                return;
+                            }
+                            if(confirm(saat + " randevusunu " + ad + " adına onaylıyor musunuz?")) {
+                                // Firebase'e hem saati hem ismi kaydediyoruz
+                                ref.push({ saat: saat, isim: ad }).then(() => {
+                                    window.location.href = "https://wa.me/905352203580?text=Merhaba, ben " + ad + ". " + saat + " saati için randevu almak istiyorum.";
                                 });
                             }
                         };
