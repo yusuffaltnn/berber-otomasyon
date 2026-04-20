@@ -8,12 +8,13 @@
         :root { --gold: #d4af37; --dark: #121212; }
         body { background: var(--dark); color: white; text-align: center; font-family: sans-serif; padding: 20px; }
         h1 { color: var(--gold); }
-        .saat-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; max-width: 500px; margin: 20px auto; }
+        .saat-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; max-width: 500px; margin: 0 auto; }
         .saat-btn { border: 1px solid var(--gold); color: var(--gold); padding: 15px; background: none; cursor: pointer; border-radius: 8px; font-weight: bold; }
         .dolu { background: #333 !important; color: #666 !important; border-color: #444 !important; text-decoration: line-through; }
     </style>
 </head>
 <body>
+
     <h1>EMRE DÜZEL BARBER CLUB</h1>
     <p id="durum">Yükleniyor...</p>
     <div id="saat-listesi" class="saat-container"></div>
@@ -22,54 +23,52 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <script>
-        try {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
-                authDomain: "barber-otomasyonu.firebaseapp.com",
-                databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app/",
-                projectId: "barber-otomasyonu",
-                storageBucket: "barber-otomasyonu.appspot.com",
-                messagingSenderId: "1063957385671",
-                appId: "1:1063957385671:web:0ddca0040c2f0d2aa7c9e2"
-            };
+        // URL'NİN SONUNDAKİ SLASH'I SİLDİK VE TERTEMİZ YAPTIK
+        const firebaseConfig = {
+            apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
+            authDomain: "barber-otomasyonu.firebaseapp.com",
+            databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app", 
+            projectId: "barber-otomasyonu",
+            storageBucket: "barber-otomasyonu.appspot.com",
+            messagingSenderId: "1063957385671",
+            appId: "1:1063957385671:web:0ddca0040c2f0d2aa7c9e2"
+        };
 
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            const bugun = new Date().toISOString().slice(0, 10);
-            const dbRef = db.ref('randevular/' + bugun);
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const bugun = new Date().toISOString().slice(0, 10);
+        const dbRef = database.ref('randevular/' + bugun);
 
-            dbRef.on('value', (snapshot) => {
-                document.getElementById('durum').innerText = "Lütfen saat seçiniz:";
-                const doluSaatler = snapshot.val() ? Object.values(snapshot.val()) : [];
-                const liste = document.getElementById('saat-listesi');
-                liste.innerHTML = "";
+        dbRef.on('value', (snapshot) => {
+            document.getElementById('durum').style.display = 'none';
+            const doluSaatler = snapshot.val() ? Object.values(snapshot.val()) : [];
+            const listeDiv = document.getElementById('saat-listesi');
+            listeDiv.innerHTML = "";
 
-                for (let h = 9; h < 20; h++) {
-                    for (let m of ["00", "45"]) {
-                        if (h === 19 && m === "45") break;
-                        let saat = (h < 10 ? "0"+h : h) + ":" + m;
-                        const btn = document.createElement('button');
-                        btn.className = 'saat-btn' + (doluSaatler.includes(saat) ? ' dolu' : '');
-                        btn.innerText = saat;
-                        if (!doluSaatler.includes(saat)) {
-                            btn.onclick = () => {
-                                if(confirm(saat + " onaylıyor musun?")) {
-                                    dbRef.push(saat);
-                                    window.open("https://wa.me/905XXXXXXXXX?text=" + saat + " randevusu.");
-                                }
-                            };
-                        } else {
-                            btn.disabled = true;
-                        }
-                        liste.appendChild(btn);
+            for (let h = 9; h < 20; h++) {
+                for (let m of ["00", "45"]) {
+                    if (h === 19 && m === "45") break; 
+                    let saat = (h < 10 ? "0"+h : h) + ":" + m;
+                    const btn = document.createElement('button');
+                    btn.className = 'saat-btn';
+                    btn.innerText = saat;
+
+                    if (doluSaatler.includes(saat)) {
+                        btn.classList.add('dolu');
+                        btn.disabled = true;
+                    } else {
+                        btn.onclick = () => {
+                            if(confirm(saat + " onaylıyor musun?")) {
+                                dbRef.push(saat).then(() => alert("Onaylandı!"));
+                            }
+                        };
                     }
+                    listeDiv.appendChild(btn);
                 }
-            }, (error) => {
-                document.getElementById('durum').innerText = "Hata: " + error.message;
-            });
-        } catch (e) {
-            document.getElementById('durum').innerText = "Sistem Hatası: " + e.message;
-        }
+            }
+        }, (error) => {
+            document.getElementById('durum').innerText = "Hata: " + error.message;
+        });
     </script>
 </body>
 </html>
