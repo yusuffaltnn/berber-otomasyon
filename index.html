@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <title>Emre Düzel Barber Club</title>
     <style>
-        body { background: #121212; color: white; text-align: center; font-family: sans-serif; padding: 20px; }
-        .gold { color: #d4af37; }
-        .btn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-width: 500px; margin: 20px auto; }
+        body { background: #0f0f0f; color: white; text-align: center; font-family: sans-serif; padding: 20px; }
+        .gold { color: #d4af37; letter-spacing: 2px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-width: 500px; margin: 20px auto; }
         .btn { border: 1px solid #d4af37; color: #d4af37; padding: 15px; background: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn:hover { background: #d4af37; color: black; }
         .dolu { background: #333 !important; color: #666 !important; border-color: #444 !important; text-decoration: line-through; }
@@ -14,15 +14,22 @@
 </head>
 <body>
     <h1 class="gold">EMRE DÜZEL BARBER CLUB</h1>
-    <div id="status">Bağlantı kontrol ediliyor...</div>
-    <div id="saat-listesi" class="btn-grid"></div>
+    <div id="status">Sistem başlatılıyor...</div>
+    <div id="saat-listesi" class="grid"></div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
+        // BU KISIM SENİN FİREBASE PANELİNDEKİ GERÇEK BİLGİLERİN
         const firebaseConfig = {
-            databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app"
+            apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
+            authDomain: "barber-otomasyonu.firebaseapp.com",
+            databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "barber-otomasyonu",
+            storageBucket: "barber-otomasyonu.appspot.com",
+            messagingSenderId: "1063957385671",
+            appId: "1:1063957385671:web:0ddca0040c2f0d2aa7c9e2"
         };
 
         try {
@@ -31,8 +38,18 @@
             const bugun = new Date().toISOString().slice(0, 10);
             const ref = db.ref('randevular/' + bugun);
 
+            // BAĞLANTI DURUMUNU KONTROL ETMEK İÇİN ÖZEL KOD
+            const connectedRef = db.ref(".info/connected");
+            connectedRef.on("value", (snap) => {
+                if (snap.val() === true) {
+                    document.getElementById('status').innerText = "Bağlantı Başarılı! Saat yükleniyor...";
+                } else {
+                    document.getElementById('status').innerText = "Veritabanına bağlanılamıyor... (İnternetini kontrol et)";
+                }
+            });
+
             ref.on('value', (snap) => {
-                document.getElementById('status').innerText = "Bir saat seçiniz:";
+                document.getElementById('status').innerText = "Müsait bir saat seçiniz:";
                 const dolu = snap.val() ? Object.values(snap.val()) : [];
                 const liste = document.getElementById('saat-listesi');
                 liste.innerHTML = "";
@@ -45,17 +62,17 @@
                         b.className = 'btn' + (dolu.includes(s) ? ' dolu' : '');
                         b.innerText = s;
                         if (!dolu.includes(s)) {
-                            b.onclick = () => { if(confirm(s + " Onaylansın mı?")) ref.push(s); };
+                            b.onclick = () => { if(confirm(s + " için randevu alınsın mı?")) ref.push(s); };
                         }
                         liste.appendChild(b);
                     }
                 }
             }, (err) => {
-                document.getElementById('status').innerHTML = "<b>Kritik Hata:</b> " + err.message;
+                document.getElementById('status').innerText = "Hata oluştu: " + err.message;
             });
         } catch (e) {
-            document.getElementById('status').innerText = "Başlatma Hatası: " + e.message;
+            document.getElementById('status').innerText = "Sistem Hatası: " + e.message;
         }
     </script>
 </body>
-</html>
+</html>            
