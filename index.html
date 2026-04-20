@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emre Düzel Barber Club</title>
+    <style>
+        :root { --gold: #d4af37; --dark: #121212; }
+        body { background: var(--dark); color: white; text-align: center; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        h1 { color: var(--gold); letter-spacing: 2px; margin-bottom: 5px; }
+        .sub-title { color: #aaa; margin-bottom: 30px; }
+        .saat-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 15px; max-width: 600px; margin: 0 auto; 
+        }
+        .saat-btn { 
+            border: 1px solid var(--gold); color: var(--gold); padding: 15px; 
+            background: none; cursor: pointer; border-radius: 8px; font-weight: bold; 
+        }
+        .saat-btn:hover:not(.dolu) { background: var(--gold); color: black; }
+        .dolu { background: #333; color: #666; border-color: #444; cursor: not-allowed; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+
+    <h1>EMRE DÜZEL BARBER CLUB</h1>
+    <p class="sub-title">Samandağ'ın İlk Erkek Güzellik Merkezi</p>
+    
+    <div id="saat-listesi" class="saat-container">
+        </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+        // Senin Bilgilerinle Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
+            authDomain: "barber-otomasyonu.firebaseapp.com",
+            databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "barber-otomasyonu",
+            storageBucket: "barber-otomasyonu.appspot.com",
+            messagingSenderId: "1063957385671",
+            appId: "1:1063957385671:web:0ddca0040c2f0d2aa7c9e2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const bugun = new Date().toISOString().slice(0, 10);
+        const dbRef = ref(db, 'randevular/' + bugun);
+
+        const listeDiv = document.getElementById('saat-listesi');
+
+        onValue(dbRef, (snapshot) => {
+            const doluSaatler = snapshot.val() ? Object.values(snapshot.val()) : [];
+            listeDiv.innerHTML = "";
+
+            for (let h = 9; h < 20; h++) {
+                for (let m of ["00", "45"]) {
+                    if (h === 19 && m === "45") break; 
+                    let saat = `${h.toString().padStart(2, '0')}:${m}`;
+                    
+                    const btn = document.createElement('button');
+                    btn.className = 'saat-btn';
+                    btn.innerText = saat;
+
+                    if (doluSaatler.includes(saat)) {
+                        btn.classList.add('dolu');
+                        btn.disabled = true;
+                    } else {
+                        btn.onclick = () => {
+                            if(confirm(saat + " randevusunu onaylıyor musunuz?")) {
+                                push(dbRef, saat).then(() => {
+                                    // Numaranı buraya yazmayı unutma
+                                    window.open(`https://wa.me/905XXXXXXXXX?text=${saat} randevusu aldım.`);
+                                });
+                            }
+                        };
+                    }
+                    listeDiv.appendChild(btn);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
