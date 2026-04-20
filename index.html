@@ -1,82 +1,23 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emre Düzel Barber Club</title>
-    <style>
-        :root { --gold: #d4af37; --dark: #0f0f0f; --card: #1a1a1a; }
-        body { background: var(--dark); color: white; text-align: center; font-family: sans-serif; margin: 0; padding: 20px; }
-        header { padding: 20px; border-bottom: 1px solid #333; margin-bottom: 30px; }
-        h1 { color: var(--gold); letter-spacing: 3px; margin: 0; }
-        .container { width: 95%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 15px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #222; }
-        .saat-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px; margin-top: 20px; }
-        .btn { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn:hover:not(.dolu) { background: var(--gold); color: black; }
-        .dolu { background: #333 !important; color: #666 !important; border-color: #444 !important; text-decoration: line-through; cursor: not-allowed; }
-    </style>
-</head>
-<body>
+<script>
+    const config = {
+        apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
+        authDomain: "barber-otomasyonu.firebaseapp.com",
+        databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "barber-otomasyonu"
+    };
 
-    <header>
-        <h1>EMRE DÜZEL</h1>
-        <div style="color:#888; font-size:12px; margin-top:5px; letter-spacing:2px;">BARBER CLUB & ESTETİK</div>
-    </header>
+    if (!firebase.apps.length) { firebase.initializeApp(config); }
+    const db = firebase.database();
+    const bugun = new Date().toISOString().slice(0, 10);
+    const ref = db.ref('randevular/' + bugun);
 
-    <div class="container">
-        <div id="status" style="font-size: 14px; color: #aaa;">Bağlantı kuruluyor...</div>
-        <div id="saat-listesi" class="saat-container"></div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <script>
-        const config = {
-            apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
-            authDomain: "barber-otomasyonu.firebaseapp.com",
-            databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "barber-otomasyonu"
-        };
-
-        // Firebase Başlatma
-        if (!firebase.apps.length) {
-            firebase.initializeApp(config);
-        }
-        
-        const db = firebase.database();
-        const bugun = new Date().toISOString().slice(0, 10);
-        const ref = db.ref('randevular/' + bugun);
-
-        // Veri Çekme
-        ref.on('value', (snapshot) => {
-            document.getElementById('status').innerText = "Müsait bir saat seçiniz:";
-            const dolu = snapshot.val() ? Object.values(snapshot.val()) : [];
-            const liste = document.getElementById('saat-listesi');
-            liste.innerHTML = "";
-
-            for (let h = 9; h < 20; h++) {
-                for (let m of ["00", "45"]) {
-                    if (h === 19 && m === "45") break;
-                    let saat = (h < 10 ? "0"+h : h) + ":" + m;
-                    
-                    const b = document.createElement('button');
-                    b.className = 'btn' + (dolu.includes(saat) ? ' dolu' : '');
-                    b.innerText = saat;
-                    
-                    if (!dolu.includes(saat)) {
-                        b.onclick = () => {
-                            if(confirm(saat + " randevusunu onaylıyor musunuz?")) {
-                                ref.push(saat);
-                            }
-                        };
-                    }
-                    liste.appendChild(b);
-                }
-            }
-        }, (error) => {
-            document.getElementById('status').innerText = "Hata: " + error.message;
-        });
-    </script>
-</body>
-</html>
+    // HATA YAKALAMA EKLEDİK
+    ref.on('value', (snap) => {
+        document.getElementById('status').innerText = "Müsait bir saat seçiniz:";
+        // ... (saat oluşturma kodları buraya gelecek)
+    }, (error) => {
+        // EĞER HATA VARSA "YÜKLENİYOR" YERİNE BURADA YAZACAK
+        document.getElementById('status').innerText = "BAĞLANTI HATASI: " + error.message;
+        console.error(error);
+    });
+</script>
