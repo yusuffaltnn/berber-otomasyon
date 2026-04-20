@@ -2,62 +2,60 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emre Düzel Barber Club</title>
     <style>
-        :root { --gold: #d4af37; --dark: #121212; }
-        body { background: var(--dark); color: white; text-align: center; font-family: sans-serif; padding: 20px; }
-        h1 { color: var(--gold); margin-bottom: 20px; }
-        .container { width: 95%; max-width: 500px; background: #1a1a1a; padding: 20px; border-radius: 15px; margin: 0 auto; border: 1px solid #333; }
-        .saat-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 20px; }
-        .btn { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn:hover { background: var(--gold); color: black; }
-        .dolu { background: #333 !important; color: #555 !important; border-color: #444 !important; text-decoration: line-through; }
+        body { background: #121212; color: white; text-align: center; font-family: sans-serif; padding: 20px; }
+        .gold { color: #d4af37; }
+        .btn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-width: 500px; margin: 20px auto; }
+        .btn { border: 1px solid #d4af37; color: #d4af37; padding: 15px; background: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn:hover { background: #d4af37; color: black; }
+        .dolu { background: #333 !important; color: #666 !important; border-color: #444 !important; text-decoration: line-through; }
     </style>
 </head>
 <body>
+    <h1 class="gold">EMRE DÜZEL BARBER CLUB</h1>
+    <div id="status">Bağlantı kontrol ediliyor...</div>
+    <div id="saat-listesi" class="btn-grid"></div>
 
-    <h1>EMRE DÜZEL BARBER CLUB</h1>
-    <div class="container">
-        <div id="status">Veriler yükleniyor...</div>
-        <div id="saat-listesi" class="saat-container"></div>
-    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
-
+    <script>
         const firebaseConfig = {
             databaseURL: "https://barber-otomasyonu-default-rtdb.europe-west1.firebasedatabase.app"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const bugun = new Date().toISOString().slice(0, 10);
-        const dbRef = ref(db, 'randevular/' + bugun);
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            const bugun = new Date().toISOString().slice(0, 10);
+            const ref = db.ref('randevular/' + bugun);
 
-        onValue(dbRef, (snapshot) => {
-            document.getElementById('status').innerText = "Bir saat seçiniz:";
-            const dolu = snapshot.val() ? Object.values(snapshot.val()) : [];
-            const liste = document.getElementById('saat-listesi');
-            liste.innerHTML = "";
+            ref.on('value', (snap) => {
+                document.getElementById('status').innerText = "Bir saat seçiniz:";
+                const dolu = snap.val() ? Object.values(snap.val()) : [];
+                const liste = document.getElementById('saat-listesi');
+                liste.innerHTML = "";
 
-            for (let h = 9; h < 20; h++) {
-                for (let m of ["00", "45"]) {
-                    if (h === 19 && m === "45") break;
-                    let saat = (h < 10 ? "0"+h : h) + ":" + m;
-                    const b = document.createElement('button');
-                    b.className = 'btn' + (dolu.includes(saat) ? ' dolu' : '');
-                    b.innerText = saat;
-                    if (!dolu.includes(saat)) {
-                        b.onclick = () => { if(confirm(saat + " onaylansın mı?")) push(dbRef, saat); };
+                for (let h = 9; h < 20; h++) {
+                    for (let m of ["00", "45"]) {
+                        if (h === 19 && m === "45") break;
+                        let s = (h < 10 ? "0"+h : h) + ":" + m;
+                        const b = document.createElement('button');
+                        b.className = 'btn' + (dolu.includes(s) ? ' dolu' : '');
+                        b.innerText = s;
+                        if (!dolu.includes(s)) {
+                            b.onclick = () => { if(confirm(s + " Onaylansın mı?")) ref.push(s); };
+                        }
+                        liste.appendChild(b);
                     }
-                    liste.appendChild(b);
                 }
-            }
-        }, (error) => {
-            document.getElementById('status').innerText = "HATA: " + error.message;
-        });
+            }, (err) => {
+                document.getElementById('status').innerHTML = "<b>Kritik Hata:</b> " + err.message;
+            });
+        } catch (e) {
+            document.getElementById('status').innerText = "Başlatma Hatası: " + e.message;
+        }
     </script>
 </body>
 </html>
