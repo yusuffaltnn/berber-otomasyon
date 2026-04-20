@@ -6,35 +6,28 @@
     <title>Emre Düzel Barber Club</title>
     <style>
         :root { --gold: #d4af37; --dark: #121212; }
-        body { background: var(--dark); color: white; text-align: center; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        h1 { color: var(--gold); letter-spacing: 2px; margin-bottom: 5px; }
-        .sub-title { color: #aaa; margin-bottom: 30px; }
-        .saat-container { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
-            gap: 15px; max-width: 600px; margin: 0 auto; 
-        }
-        .saat-btn { 
-            border: 1px solid var(--gold); color: var(--gold); padding: 15px; 
-            background: none; cursor: pointer; border-radius: 8px; font-weight: bold; 
-        }
-        .saat-btn:hover:not(.dolu) { background: var(--gold); color: black; }
-        .dolu { background: #333; color: #666; border-color: #444; cursor: not-allowed; text-decoration: line-through; }
+        body { background: var(--dark); color: white; text-align: center; font-family: sans-serif; padding: 20px; }
+        h1 { color: var(--gold); margin-bottom: 5px; }
+        .sub { color: #aaa; margin-bottom: 30px; font-size: 14px; }
+        .saat-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; max-width: 500px; margin: 0 auto; }
+        .saat-btn { border: 1px solid var(--gold); color: var(--gold); padding: 15px; background: none; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .saat-btn:hover { background: var(--gold); color: black; }
+        .dolu { background: #333 !important; color: #666 !important; border-color: #444 !important; cursor: not-allowed; text-decoration: line-through; }
     </style>
 </head>
 <body>
 
     <h1>EMRE DÜZEL BARBER CLUB</h1>
-    <p class="sub-title">Samandağ'ın İlk Erkek Güzellik Merkezi</p>
+    <div class="sub">Samandağ'ın İlk Erkek Güzellik Merkezi</div>
     
     <div id="saat-listesi" class="saat-container">
-        </div>
+        <p>Yükleniyor...</p>
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-        // Senin Bilgilerinle Config
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCFZEzsd1xQ9XVSEBM0ZxbGnoIK5k0m0lM",
             authDomain: "barber-otomasyonu.firebaseapp.com",
@@ -45,21 +38,24 @@
             appId: "1:1063957385671:web:0ddca0040c2f0d2aa7c9e2"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        // Başlat
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
         const bugun = new Date().toISOString().slice(0, 10);
-        const dbRef = ref(db, 'randevular/' + bugun);
+        const dbRef = database.ref('randevular/' + bugun);
 
         const listeDiv = document.getElementById('saat-listesi');
 
-        onValue(dbRef, (snapshot) => {
+        // Verileri Dinle
+        dbRef.on('value', (snapshot) => {
             const doluSaatler = snapshot.val() ? Object.values(snapshot.val()) : [];
-            listeDiv.innerHTML = "";
+            listeDiv.innerHTML = ""; // Yükleniyor yazısını sil
 
             for (let h = 9; h < 20; h++) {
                 for (let m of ["00", "45"]) {
                     if (h === 19 && m === "45") break; 
-                    let saat = `${h.toString().padStart(2, '0')}:${m}`;
+                    let saat = (h < 10 ? "0"+h : h) + ":" + m;
                     
                     const btn = document.createElement('button');
                     btn.className = 'saat-btn';
@@ -71,9 +67,9 @@
                     } else {
                         btn.onclick = () => {
                             if(confirm(saat + " randevusunu onaylıyor musunuz?")) {
-                                push(dbRef, saat).then(() => {
-                                    // Numaranı buraya yazmayı unutma
-                                    window.open(`https://wa.me/905XXXXXXXXX?text=${saat} randevusu aldım.`);
+                                dbRef.push(saat).then(() => {
+                                    alert("Randevu alındı! WhatsApp'a yönlendiriliyorsunuz.");
+                                    window.open("https://wa.me/905XXXXXXXXX?text=" + saat + " randevusu aldım.");
                                 });
                             }
                         };
@@ -81,6 +77,8 @@
                     listeDiv.appendChild(btn);
                 }
             }
+        }, (error) => {
+            listeDiv.innerHTML = "<p>Hata: " + error.message + "</p>";
         });
     </script>
 </body>
